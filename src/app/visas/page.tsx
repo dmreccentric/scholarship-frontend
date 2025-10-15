@@ -1,13 +1,13 @@
-import Container from "./components/Container";
-import Card from "./components/Card";
-import axios from "./lib/axios";
-import { Scholarship } from "./types";
-import ErrorBlock from "./components/ErrorBlock";
+import axios from "../lib/axios";
+import { Visa } from "../types";
+import Container from "../components/Container";
+import Card from "../components/Card";
+import ErrorBlock from "../components/ErrorBlock";
 import Link from "next/link";
 
-export const revalidate = 60; // (optional) ISR every 60s
+export const revalidate = 60;
 
-export default async function Home({
+export default async function VisaPage({
   searchParams,
 }: {
   searchParams?: Promise<{ page?: string }>;
@@ -15,21 +15,20 @@ export default async function Home({
   const params = await searchParams;
   const page = Number(params?.page) || 1;
   const limit = 9;
-  let data: Scholarship[] = [];
+
+  let data: Visa[] = [];
   let total = 0;
   let error: string | null = null;
 
   try {
-    const res = await axios.get("/scholarships", {
+    const res = await axios.get("/visas", {
       params: { page, limit },
-      withCredentials: true,
     });
     data = res.data.data;
     total = res.data.total || 0;
   } catch (e: any) {
-    console.error("❌ SSR Fetch error:", e);
-    error =
-      e?.response?.data?.message || e?.message || "Failed to load scholarships";
+    console.error("❌ Error fetching visas:", e);
+    error = e?.response?.data?.message || e?.message || "Failed to load visas.";
   }
 
   const totalPages = Math.ceil(total / limit);
@@ -45,27 +44,28 @@ export default async function Home({
   return (
     <Container>
       <section className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Scholarships</h1>
+        <h1 className="text-3xl font-bold mb-2">Visa Opportunities</h1>
         <p className="text-gray-600 mb-4">
-          Browse available scholarships and click to view details.
+          Explore visa programs and opportunities around the world.
         </p>
       </section>
 
-      {data && data.length > 0 ? (
+      {data.length > 0 ? (
         <>
-          {/* Scholarships Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data.map((s) => (
+            {data.map((visa) => (
               <Card
-                key={s._id}
-                href={`/scholarships/${s._id}`}
-                title={s.title}
-                subtitle={`${s.institution ?? ""} • ${s.hostCountry ?? ""}`}
-                date={s.createdAt}
-                image={typeof s.image === "string" ? s.image : s.image?.url}
+                key={visa._id}
+                href={`/visas/${visa._id}`} // ✅ fixed
+                title={`${visa.title} — ${visa.country}`}
+                subtitle={visa.processingTime || ""}
+                date={visa.createdAt}
+                image={
+                  typeof visa.image === "string" ? visa.image : visa.image?.url
+                }
               >
                 <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                  {s.description}
+                  {visa.description}
                 </p>
               </Card>
             ))}
@@ -74,17 +74,15 @@ export default async function Home({
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-10 flex-wrap">
-              {/* Previous */}
               {page > 1 && (
                 <Link
-                  href={`/?page=${page - 1}`}
+                  href={`/visas?page=${page - 1}`} // ✅ fixed
                   className="px-4 py-2 border rounded-md hover:bg-gray-200"
                 >
                   Previous
                 </Link>
               )}
 
-              {/* Page numbers */}
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                 (num) => {
                   if (
@@ -95,7 +93,7 @@ export default async function Home({
                     return (
                       <Link
                         key={num}
-                        href={`/?page=${num}`}
+                        href={`/visas?page=${num}`} // ✅ fixed
                         className={`px-3 py-1 rounded-md border ${
                           num === page
                             ? "bg-gray-800 text-white"
@@ -125,10 +123,9 @@ export default async function Home({
                 }
               )}
 
-              {/* Next */}
               {page < totalPages && (
                 <Link
-                  href={`/?page=${page + 1}`}
+                  href={`/visas?page=${page + 1}`} // ✅ fixed
                   className="px-4 py-2 border rounded-md hover:bg-gray-200"
                 >
                   Next
@@ -139,7 +136,7 @@ export default async function Home({
         </>
       ) : (
         <p className="text-gray-500 text-center mt-10">
-          No scholarships available at the moment.
+          No visa opportunities available at the moment.
         </p>
       )}
     </Container>

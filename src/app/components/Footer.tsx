@@ -8,6 +8,7 @@ import {
   Twitter,
   MessageCircle,
 } from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
 
 const Footer = () => {
   return (
@@ -78,16 +79,16 @@ const Footer = () => {
                   icon: <Instagram size={22} className="text-pink-500" />,
                 },
                 {
-                  href: "https://wa.me/yourphonenumber",
+                  href: "https://wa.me/+447392893665",
                   icon: <MessageCircle size={22} className="text-green-500" />,
                 },
                 {
-                  href: "https://facebook.com/yourusername",
+                  href: "https://www.facebook.com/consulant.sameera",
                   icon: <Facebook size={22} className="text-blue-600" />,
                 },
                 {
-                  href: "https://twitter.com/yourusername",
-                  icon: <Twitter size={22} className="text-sky-500" />,
+                  href: "tiktok.com/@hs.consultancyservice",
+                  icon: <FaTiktok size={22} className="text-sky-500" />,
                 },
               ].map((social, i) => (
                 <a

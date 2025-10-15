@@ -122,7 +122,7 @@ export default function ContactForm() {
         <button
           onClick={() =>
             window.open(
-              "mailto:assettv481@gmail.com?subject=General%20Enquiry",
+              "mailto:hibasameera06@gmail.com?subject=General%20Enquiry",
               "_blank"
             )
           }

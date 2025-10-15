@@ -148,7 +148,7 @@ export default function EnquiryModal({
             className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
             onClick={() =>
               window.open(
-                `mailto:assettv481@gmail.com?subject=Enquiry:%20${encodeURIComponent(
+                `mailto:hibasameera06@gmail.com?subject=Enquiry:%20${encodeURIComponent(
                   itemTitle
                 )}`,
                 "_blank"

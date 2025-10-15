@@ -116,6 +116,7 @@ export default function ScholarshipClient({ data }: { data: Scholarship }) {
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
               className="object-cover"
+              priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
             <div className="absolute bottom-6 left-6">

@@ -10,10 +10,11 @@ import type { Metadata } from "next";
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const { id } = await params;
   try {
-    const res = await axios.get(`/visas/${params.id}`);
+    const res = await axios.get(`/visas/${id}`);
     const visa: Visa = res.data.data;
 
     const imageUrl =

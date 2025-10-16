@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import Script from "next/script";
+import dynamic from "next/dynamic";
 import { Visa } from "../../types";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import EnquiryModal from "@/app/components/EnquiryModal";
+const EnquiryModal = dynamic(() => import("@/app/components/EnquiryModal"), {
+  ssr: false,
+  loading: () => <p className="text-center text-gray-500">Loading...</p>,
+});
 
 interface Props {
   data: Visa;
@@ -16,8 +20,32 @@ interface Props {
 
 export default function VisaClient({ data, related, recent }: Props) {
   const [showModal, setShowModal] = useState(false);
+
   const imageUrl =
     typeof data.image === "string" ? data.image : data.image?.url;
+
+  // ✅ Memoize schema data for performance
+  const schemaData = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: data.title,
+      description: data.description,
+      image:
+        typeof data.image === "string"
+          ? data.image
+          : data.image?.url || "https://yoursite.com/default-visa.jpg",
+      brand: { "@type": "Brand", name: data.country },
+      offers: {
+        "@type": "Offer",
+        price: data.fee || "0",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `https://yoursite.com/visas/${data._id}`,
+      },
+    }),
+    [data]
+  );
 
   return (
     <article
@@ -25,33 +53,14 @@ export default function VisaClient({ data, related, recent }: Props) {
       itemScope
       itemType="https://schema.org/Product"
     >
-      {/* ✅ JSON-LD Structured Data for SEO */}
+      {/* ✅ Structured Data for SEO */}
       <Script
         id="visa-schema"
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Product",
-            name: data.title,
-            description: data.description,
-            image:
-              typeof data.image === "string"
-                ? data.image
-                : data.image?.url || "https://yoursite.com/default-visa.jpg",
-            brand: { "@type": "Brand", name: data.country },
-            offers: {
-              "@type": "Offer",
-              price: data.fee || "0",
-              priceCurrency: "USD",
-              availability: "https://schema.org/InStock",
-              url: `https://yoursite.com/visas/${data._id}`,
-            },
-          }),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
       />
 
-      {/* ✅ Hero Section */}
+      {/* ✅ Hero Image */}
       {imageUrl && (
         <figure className="relative w-full h-[300px] md:h-[400px] rounded-2xl overflow-hidden shadow-lg">
           <Image
@@ -59,6 +68,7 @@ export default function VisaClient({ data, related, recent }: Props) {
             alt={data.title}
             fill
             priority
+            quality={75}
             sizes="(max-width: 768px) 100vw, 80vw"
             className="object-cover"
           />
@@ -66,7 +76,7 @@ export default function VisaClient({ data, related, recent }: Props) {
         </figure>
       )}
 
-      {/* ✅ Visa Information */}
+      {/* ✅ Visa Info */}
       <header className="space-y-4">
         <h1 itemProp="name" className="text-4xl font-bold text-gray-900">
           {data.title}
@@ -79,7 +89,7 @@ export default function VisaClient({ data, related, recent }: Props) {
         </p>
       </header>
 
-      {/* ✅ Requirements & Info */}
+      {/* ✅ Requirements */}
       <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-700">
         {Array.isArray(data.requirements) && data.requirements.length > 0 && (
           <div>
@@ -140,6 +150,8 @@ export default function VisaClient({ data, related, recent }: Props) {
                         src={img}
                         alt={visa.title}
                         fill
+                        loading="lazy"
+                        quality={70}
                         className="object-cover"
                       />
                     </div>
@@ -182,6 +194,8 @@ export default function VisaClient({ data, related, recent }: Props) {
                         src={img}
                         alt={visa.title}
                         fill
+                        quality={70}
+                        loading="lazy"
                         className="object-cover"
                       />
                     </div>
@@ -204,7 +218,7 @@ export default function VisaClient({ data, related, recent }: Props) {
         </section>
       )}
 
-      {/* ✅ Enquiry Modal */}
+      {/* ✅ Modal */}
       <EnquiryModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}

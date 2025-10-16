@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "../../lib/axios";
@@ -20,7 +21,10 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import EnquiryModal from "@/app/components/EnquiryModal";
+const EnquiryModal = dynamic(() => import("@/app/components/EnquiryModal"), {
+  ssr: false,
+  loading: () => <p className="text-center text-gray-500">Loading...</p>,
+});
 
 interface Scholarship {
   _id: string;

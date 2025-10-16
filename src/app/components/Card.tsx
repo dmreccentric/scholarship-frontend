@@ -1,7 +1,5 @@
-"use client";
 import Link from "next/link";
 import Image from "next/image";
-import React from "react";
 
 type Props = {
   href: string;
@@ -10,6 +8,7 @@ type Props = {
   date?: string;
   image?: string;
   children?: React.ReactNode;
+  priority?: boolean;
 };
 
 const Card: React.FC<Props> = ({
@@ -19,6 +18,7 @@ const Card: React.FC<Props> = ({
   date,
   image,
   children,
+  priority,
 }) => {
   const formattedDate = date
     ? new Date(date).toLocaleDateString(undefined, {
@@ -39,7 +39,7 @@ const Card: React.FC<Props> = ({
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover transition-transform duration-300 group-hover:scale-105"
-              priority={false}
+              priority={priority}
             />
           </div>
         )}

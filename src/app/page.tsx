@@ -58,12 +58,16 @@ export default async function Home({
   let error: string | null = null;
 
   try {
-    const res = await axios.get("/scholarships", {
-      params: { page, limit },
-      withCredentials: true,
-    });
-    data = res.data.data;
-    total = res.data.total || 0;
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/scholarships?page=${page}&limit=${limit}`,
+      {
+        next: { revalidate: 60 }, // enable ISR
+      }
+    );
+    if (!res.ok) throw new Error("Failed to fetch scholarships");
+    const json = await res.json();
+    data = json.data;
+    total = json.total || 0;
   } catch (e: any) {
     console.error("❌ SSR Fetch error:", e);
     error =
@@ -93,9 +97,10 @@ export default async function Home({
         <>
           {/* Scholarships Grid */}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data.map((s) => (
+            {data.map((s, index) => (
               <article key={s._id}>
                 <Card
+                  priority={index < 3}
                   href={`/scholarships/${s._id}`}
                   title={s.title}
                   subtitle={`${s.institution ?? ""} • ${s.hostCountry ?? ""}`}

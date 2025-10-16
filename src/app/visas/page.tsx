@@ -3,7 +3,47 @@ import { Visa } from "../types";
 import Container from "../components/Container";
 import Card from "../components/Card";
 import ErrorBlock from "../components/ErrorBlock";
-import Link from "next/link";
+import Pagination from "../components/Pagination";
+import Script from "next/script";
+
+export const metadata = {
+  title: "Visa Opportunities | Global Visa Programs & Immigration Options",
+  description:
+    "Explore global visa programs, work opportunities, and study options. Find detailed information on visa requirements, eligibility, and application processes.",
+  keywords: [
+    "visa opportunities",
+    "immigration programs",
+    "work visas",
+    "student visas",
+    "visa requirements",
+    "travel authorization",
+    "international work",
+  ],
+  openGraph: {
+    title: "Visa Opportunities | Explore Global Visa Programs",
+    description:
+      "Discover verified visa opportunities for work, study, and travel worldwide. Stay informed about global immigration updates and requirements.",
+    url: "https://yoursite.com/visas",
+    siteName: "Scholarship Finder",
+    images: [
+      {
+        url: "https://yoursite.com/og-image-visas.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Visa Programs Worldwide",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Visa Opportunities | Global Visa and Immigration Updates",
+    description:
+      "Explore work, study, and travel visa programs around the world.",
+    images: ["https://yoursite.com/og-image-visas.jpg"],
+  },
+};
 
 export const revalidate = 60;
 
@@ -43,102 +83,73 @@ export default async function VisaPage({
 
   return (
     <Container>
-      <section className="mb-8">
+      {/* ✅ JSON-LD Schema Script (inside the component, after data is defined) */}
+      <Script
+        id="visa-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            name: "Visa Opportunities",
+            itemListElement: data.map((visa: Visa, index: number) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              name: visa.title,
+              url: `https://yoursite.com/visas/${visa._id}`,
+            })),
+          }),
+        }}
+      />
+
+      <header className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Visa Opportunities</h1>
         <p className="text-gray-600 mb-4">
           Explore visa programs and opportunities around the world.
         </p>
-      </section>
+      </header>
 
-      {data.length > 0 ? (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data.map((visa) => (
-              <Card
-                key={visa._id}
-                href={`/visas/${visa._id}`} // ✅ fixed
-                title={`${visa.title} — ${visa.country}`}
-                subtitle={visa.processingTime || ""}
-                date={visa.createdAt}
-                image={
-                  typeof visa.image === "string" ? visa.image : visa.image?.url
-                }
-              >
-                <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                  {visa.description}
-                </p>
-              </Card>
-            ))}
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-10 flex-wrap">
-              {page > 1 && (
-                <Link
-                  href={`/visas?page=${page - 1}`} // ✅ fixed
-                  className="px-4 py-2 border rounded-md hover:bg-gray-200"
-                >
-                  Previous
-                </Link>
-              )}
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (num) => {
-                  if (
-                    num === 1 ||
-                    num === totalPages ||
-                    Math.abs(num - page) <= 1
-                  ) {
-                    return (
-                      <Link
-                        key={num}
-                        href={`/visas?page=${num}`} // ✅ fixed
-                        className={`px-3 py-1 rounded-md border ${
-                          num === page
-                            ? "bg-gray-800 text-white"
-                            : "hover:bg-gray-200"
-                        }`}
-                      >
-                        {num}
-                      </Link>
-                    );
-                  }
-
-                  if (
-                    (num === page - 2 && num > 1) ||
-                    (num === page + 2 && num < totalPages)
-                  ) {
-                    return (
-                      <span
-                        key={`ellipsis-${num}`}
-                        className="px-2 text-gray-500"
-                      >
-                        ...
-                      </span>
-                    );
-                  }
-
-                  return null;
-                }
-              )}
-
-              {page < totalPages && (
-                <Link
-                  href={`/visas?page=${page + 1}`} // ✅ fixed
-                  className="px-4 py-2 border rounded-md hover:bg-gray-200"
-                >
-                  Next
-                </Link>
-              )}
+      <main>
+        {data.length > 0 ? (
+          <>
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              aria-label="Visa listings"
+            >
+              {data.map((visa: Visa) => (
+                <article key={visa._id}>
+                  <Card
+                    href={`/visas/${visa._id}`}
+                    title={`${visa.title} — ${visa.country}`}
+                    subtitle={visa.processingTime || ""}
+                    date={visa.createdAt}
+                    image={
+                      typeof visa.image === "string"
+                        ? visa.image
+                        : visa.image?.url
+                    }
+                  >
+                    <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                      {visa.description}
+                    </p>
+                  </Card>
+                </article>
+              ))}
             </div>
-          )}
-        </>
-      ) : (
-        <p className="text-gray-500 text-center mt-10">
-          No visa opportunities available at the moment.
-        </p>
-      )}
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              basePath="/visas"
+            />
+          </>
+        ) : (
+          <p className="text-gray-500 text-center mt-10">
+            No visa opportunities available at the moment.
+          </p>
+        )}
+      </main>
     </Container>
   );
 }

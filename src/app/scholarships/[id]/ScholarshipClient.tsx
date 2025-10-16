@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "../../lib/axios";
@@ -19,7 +20,6 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import toast from "react-hot-toast";
 import EnquiryModal from "@/app/components/EnquiryModal";
 
 interface Scholarship {
@@ -38,7 +38,6 @@ interface Scholarship {
   fullyFunded: boolean;
   image?: string;
   createdAt?: string;
-  updatedAt?: string;
 }
 
 interface Post {
@@ -99,39 +98,99 @@ export default function ScholarshipClient({ data }: { data: Scholarship }) {
   if (loading) return <ScholarshipSkeleton />;
 
   return (
-    <div className="space-y-12">
-      {/* 🎓 Scholarship details section */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden"
-      >
-        {/* Cover Image */}
-        {data.image && (
-          <div className="relative w-full h-72 md:h-96 overflow-hidden">
-            <Image
-              src={data.image}
-              alt={data.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-            <div className="absolute bottom-6 left-6">
-              <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">
-                {data.title}
-              </h1>
-              <p className="text-white/90 text-sm mt-1">
-                {data.institution} — {data.hostCountry}
-              </p>
-            </div>
-          </div>
-        )}
+    <main
+      className="space-y-12"
+      itemScope
+      itemType="https://schema.org/Scholarship"
+    >
+      {/* JSON-LD: Scholarship Schema */}
+      <Script
+        id="scholarship-schema"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Scholarship",
+            name: data.title,
+            description: data.description,
+            provider: {
+              "@type": "CollegeOrUniversity",
+              name: data.institution,
+            },
+            countryOfOrigin: data.hostCountry,
+            educationalCredentialAwarded: data.category,
+            monetaryAmount: {
+              "@type": "MonetaryAmount",
+              currency: "USD",
+              value: data.reward || "Varies",
+            },
+            url: `https://yourdomain.com/scholarships/${data._id}`,
+          }),
+        }}
+      />
 
-        <div className="p-6 md:p-8 space-y-6">
-          {/* Key info grid */}
+      {/* JSON-LD: Breadcrumb Schema */}
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Scholarships",
+                item: "https://yourdomain.com/scholarships",
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: data.title,
+                item: `https://yourdomain.com/scholarships/${data._id}`,
+              },
+            ],
+          }),
+        }}
+      />
+
+      {/* Scholarship Detail */}
+      <article
+        className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden"
+        itemProp="mainEntityOfPage"
+      >
+        <header>
+          {data.image && (
+            <div className="relative w-full h-72 md:h-96 overflow-hidden">
+              <Image
+                src={data.image}
+                alt={data.title}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              <div className="absolute bottom-6 left-6">
+                <h1
+                  className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg"
+                  itemProp="name"
+                >
+                  {data.title}
+                </h1>
+                <p className="text-white/90 text-sm mt-1" itemProp="provider">
+                  {data.institution} — {data.hostCountry}
+                </p>
+              </div>
+            </div>
+          )}
+        </header>
+
+        <section className="p-6 md:p-8 space-y-6">
+          {/* Info grid */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="flex items-center gap-3 text-gray-700">
               <Globe2 className="text-blue-600" />
@@ -148,8 +207,7 @@ export default function ScholarshipClient({ data }: { data: Scholarship }) {
             <div className="flex items-center gap-3 text-gray-700">
               <Calendar className="text-rose-600" />
               <span>
-                <strong>Deadline:</strong>{" "}
-                {data.deadline ? data.deadline : "Not specified"}
+                <strong>Deadline:</strong> {data.deadline || "Not specified"}
               </span>
             </div>
             <div className="flex items-center gap-3 text-gray-700">
@@ -172,7 +230,7 @@ export default function ScholarshipClient({ data }: { data: Scholarship }) {
             </div>
           </div>
 
-          {/* Funding status & requirements */}
+          {/* Tags */}
           <div className="flex flex-wrap gap-3 pt-3">
             {data.fullyFunded && (
               <span className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -198,7 +256,7 @@ export default function ScholarshipClient({ data }: { data: Scholarship }) {
 
           {/* Eligible Countries */}
           {data.eligibleCountries?.length > 0 && (
-            <div>
+            <section aria-label="Eligible Countries">
               <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                 <Flag className="text-blue-600" /> Eligible Countries
               </h3>
@@ -212,20 +270,23 @@ export default function ScholarshipClient({ data }: { data: Scholarship }) {
                   </span>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
           {/* Description */}
-          <div>
+          <section aria-label="Scholarship Description">
             <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
               <Users className="text-indigo-600" /> Description
             </h3>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+            <p
+              className="text-gray-700 leading-relaxed whitespace-pre-line"
+              itemProp="description"
+            >
               {data.description}
             </p>
-          </div>
+          </section>
 
-          {/* Action buttons */}
+          {/* Buttons */}
           <div className="pt-6 flex flex-wrap gap-4">
             <Link
               href="/scholarships"
@@ -233,7 +294,6 @@ export default function ScholarshipClient({ data }: { data: Scholarship }) {
             >
               ← Back to Scholarships
             </Link>
-
             <button
               onClick={() => setShowModal(true)}
               className="inline-block px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition"
@@ -241,93 +301,89 @@ export default function ScholarshipClient({ data }: { data: Scholarship }) {
               Enquire Now
             </button>
           </div>
-        </div>
-      </motion.div>
+        </section>
+      </article>
 
-      {/* 📎 Related & Recent Section */}
-      <div className="mt-12 space-y-10">
-        {/* Related Scholarships */}
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Related Scholarships
-          </h2>
-          {relatedPosts.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-4">
-              {relatedPosts.map((post) => (
-                <motion.div
-                  key={post.id}
-                  whileHover={{ scale: 1.02 }}
-                  className="border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition"
-                >
-                  <Link
-                    href={`/scholarships/${post.id}`}
-                    className="text-blue-600 font-medium hover:underline"
-                  >
-                    {post.title}
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm">No related posts available.</p>
-          )}
-        </div>
-
-        {/* Recently Added */}
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Recently Added
-          </h2>
-          {recentPosts.length > 0 ? (
-            <div className="space-y-4">
-              {recentPosts.map((post) => (
+      {/* Related / Recent Sections */}
+      <section aria-label="Related Scholarships">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Related Scholarships
+        </h2>
+        {relatedPosts.length > 0 ? (
+          <div className="grid md:grid-cols-3 gap-4">
+            {relatedPosts.map((post) => (
+              <motion.div
+                key={post.id}
+                whileHover={{ scale: 1.02 }}
+                className="border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition"
+              >
                 <Link
-                  key={post.id}
                   href={`/scholarships/${post.id}`}
-                  className="flex items-center gap-4 p-3 border border-gray-100 rounded-lg hover:shadow-md transition"
+                  className="text-blue-600 font-medium hover:underline"
                 >
-                  {typeof post.image === "string" &&
-                  post.image.trim() !== "" ? (
-                    <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
-                      <Image
-                        src={post.image}
-                        alt={post.title}
-                        fill
-                        sizes="(max-width: 640px) 80px, (max-width: 1024px) 100px, 120px"
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-16 h-16 bg-gray-100 text-gray-400 flex items-center justify-center rounded-md flex-shrink-0 text-xs">
-                      No Image
-                    </div>
-                  )}
-
-                  <div>
-                    <h3 className="text-gray-800 font-medium hover:text-blue-600 transition">
-                      {post.title}
-                    </h3>
-                    {post.createdAt && (
-                      <p className="text-sm text-gray-500">
-                        {new Date(post.createdAt).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
+                  {post.title}
                 </Link>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm">No recent posts available.</p>
-          )}
-        </div>
-      </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-sm">No related posts available.</p>
+        )}
+      </section>
+
+      <section aria-label="Recently Added Scholarships">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Recently Added
+        </h2>
+        {recentPosts.length > 0 ? (
+          <div className="space-y-4">
+            {recentPosts.map((post) => (
+              <Link
+                key={post.id}
+                href={`/scholarships/${post.id}`}
+                className="flex items-center gap-4 p-3 border border-gray-100 rounded-lg hover:shadow-md transition"
+              >
+                {post.image ? (
+                  <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                    <Image
+                      src={post.image}
+                      alt={post.title}
+                      fill
+                      sizes="(max-width: 640px) 80px, (max-width: 1024px) 100px, 120px"
+                      className="object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 bg-gray-100 text-gray-400 flex items-center justify-center rounded-md flex-shrink-0 text-xs">
+                    No Image
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="text-gray-800 font-medium hover:text-blue-600 transition">
+                    {post.title}
+                  </h3>
+                  {post.createdAt && (
+                    <p className="text-sm text-gray-500">
+                      {new Date(post.createdAt).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-sm">No recent posts available.</p>
+        )}
+      </section>
 
       <EnquiryModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         itemTitle={data.title}
-        type="Schorlarship"
+        type="Scholarship"
       />
-    </div>
+    </main>
   );
 }

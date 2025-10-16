@@ -1,6 +1,7 @@
 import axios from "../lib/axios";
 import Container from "../components/Container";
 import ErrorBlock from "../components/ErrorBlock";
+import Pagination from "../components/Pagination";
 import Link from "next/link";
 
 export const revalidate = 60; // ISR every 60s
@@ -67,22 +68,31 @@ export default async function TestimonialsPage({
       </section>
 
       {data && data.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section
+          aria-label="Client testimonials"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           {data.map((t) => (
-            <div
+            <article
               key={t._id}
               className="bg-white dark:bg-gray-800 shadow-md rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col"
+              itemScope
+              itemType="https://schema.org/Review"
             >
               {/* User info header */}
-              <div className="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-700">
+              <header className="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-700">
                 {t.profilePicture?.url ? (
                   <img
                     src={t.profilePicture.url}
                     alt={t.name || "User profile"}
                     className="h-12 w-12 rounded-full object-cover border-2 border-purple-500"
+                    itemProp="image"
                   />
                 ) : (
-                  <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 border-2 border-gray-300">
+                  <div
+                    className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 border-2 border-gray-300"
+                    aria-hidden="true"
+                  >
                     ?
                   </div>
                 )}
@@ -90,40 +100,50 @@ export default async function TestimonialsPage({
                   <p className="font-semibold text-gray-800 dark:text-gray-200">
                     {t.name || "Anonymous"}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <time
+                    itemProp="datePublished"
+                    className="text-xs text-gray-500"
+                  >
                     {new Date(t.createdAt).toLocaleDateString()}
-                  </p>
+                  </time>
                 </div>
-              </div>
+              </header>
 
               {/* Message */}
-              <div className="p-4 flex-1">
+              <div className="p-4 flex-1" itemProp="reviewBody">
                 <p className="text-gray-700 dark:text-gray-300 italic mb-3 line-clamp-4">
                   “{t.message}”
                 </p>
 
                 {/* Media */}
                 {t.media?.url && (
-                  <div className="mt-2">
+                  <figure className="mt-2">
                     {t.media.resource_type === "video" ? (
                       <video
                         src={t.media.url}
                         controls
                         className="w-full h-96 rounded-md object-full"
+                        itemProp="video"
                       />
                     ) : (
                       <img
                         src={t.media.url}
                         alt="testimonial media"
                         className="w-full h-64 rounded-md object-cover"
+                        itemProp="image"
                       />
                     )}
-                  </div>
+                    {t.name && (
+                      <figcaption className="sr-only">
+                        {t.name} testimonial
+                      </figcaption>
+                    )}
+                  </figure>
                 )}
               </div>
-            </div>
+            </article>
           ))}
-        </div>
+        </section>
       ) : (
         <p className="text-gray-500 text-center mt-10">
           No testimonials available at the moment.
@@ -131,58 +151,11 @@ export default async function TestimonialsPage({
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-10 flex-wrap">
-          {page > 1 && (
-            <Link
-              href={`/testimonials?page=${page - 1}`}
-              className="px-4 py-2 border rounded-md hover:bg-gray-200"
-            >
-              Previous
-            </Link>
-          )}
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => {
-            if (num === 1 || num === totalPages || Math.abs(num - page) <= 1) {
-              return (
-                <Link
-                  key={num}
-                  href={`/testimonials?page=${num}`}
-                  className={`px-3 py-1 rounded-md border ${
-                    num === page
-                      ? "bg-gray-800 text-white"
-                      : "hover:bg-gray-200"
-                  }`}
-                >
-                  {num}
-                </Link>
-              );
-            }
-
-            if (
-              (num === page - 2 && num > 1) ||
-              (num === page + 2 && num < totalPages)
-            ) {
-              return (
-                <span key={`ellipsis-${num}`} className="px-2 text-gray-500">
-                  ...
-                </span>
-              );
-            }
-
-            return null;
-          })}
-
-          {page < totalPages && (
-            <Link
-              href={`/testimonials?page=${page + 1}`}
-              className="px-4 py-2 border rounded-md hover:bg-gray-200"
-            >
-              Next
-            </Link>
-          )}
-        </div>
-      )}
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        basePath="/testimonials"
+      />
     </Container>
   );
 }

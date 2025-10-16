@@ -1,9 +1,23 @@
+import React from "react";
+
 export default function VisaSkeleton() {
   return (
-    <div className="space-y-10 animate-pulse">
-      <div className="w-full h-[300px] md:h-[400px] bg-gray-200 dark:bg-gray-700 rounded-2xl" />
+    <article
+      className="space-y-10 animate-pulse"
+      aria-busy="true"
+      aria-label="Loading visa details"
+    >
+      <span className="sr-only">Visa details are loading, please wait.</span>
 
-      <div className="space-y-4">
+      {/* Cover */}
+      <div
+        className="w-full h-[300px] md:h-[400px] bg-gray-200 dark:bg-gray-700 rounded-2xl"
+        role="img"
+        aria-label="Visa banner loading"
+      />
+
+      {/* Visa Info */}
+      <section className="space-y-4" aria-label="Visa header loading">
         <div className="h-8 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div>
         <div className="h-5 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div>
         <div className="space-y-2">
@@ -14,16 +28,20 @@ export default function VisaSkeleton() {
             />
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="grid md:grid-cols-3 gap-4">
+      {/* Related Visa Cards */}
+      <section
+        className="grid md:grid-cols-3 gap-4"
+        aria-label="Related visas loading"
+      >
         {[...Array(3)].map((_, i) => (
           <div
             key={i}
             className="h-24 bg-gray-200 dark:bg-gray-700 rounded-xl"
           />
         ))}
-      </div>
-    </div>
+      </section>
+    </article>
   );
 }

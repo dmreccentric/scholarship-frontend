@@ -7,6 +7,44 @@ import Link from "next/link";
 
 export const revalidate = 60; // (optional) ISR every 60s
 
+export const metadata = {
+  title: "Scholarships | Explore Global Opportunities for Students",
+  description:
+    "Browse verified global scholarships from top institutions. Filter, explore, and apply for opportunities that match your dreams.",
+  keywords: [
+    "scholarships",
+    "study abroad",
+    "student funding",
+    "education grants",
+    "international scholarships",
+    "university aid",
+  ],
+  openGraph: {
+    title: "Scholarships | Explore Global Opportunities for Students",
+    description:
+      "Discover global scholarships and apply for verified funding opportunities.",
+    url: "https://yoursite.com/",
+    siteName: "Scholarship Finder",
+    images: [
+      {
+        url: "https://yoursite.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Scholarship Finder - Global Opportunities",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Scholarships | Explore Global Opportunities",
+    description:
+      "Find and apply for verified scholarships worldwide with ease.",
+    images: ["https://yoursite.com/og-image.jpg"],
+  },
+};
+
 export default async function Home({
   searchParams,
 }: {
@@ -44,36 +82,40 @@ export default async function Home({
 
   return (
     <Container>
-      <section className="mb-8">
+      <header className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Scholarships</h1>
         <p className="text-gray-600 mb-4">
           Browse available scholarships and click to view details.
         </p>
-      </section>
+      </header>
 
       {data && data.length > 0 ? (
         <>
           {/* Scholarships Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {data.map((s) => (
-              <Card
-                key={s._id}
-                href={`/scholarships/${s._id}`}
-                title={s.title}
-                subtitle={`${s.institution ?? ""} • ${s.hostCountry ?? ""}`}
-                date={s.createdAt}
-                image={typeof s.image === "string" ? s.image : s.image?.url}
-              >
-                <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                  {s.description}
-                </p>
-              </Card>
+              <article key={s._id}>
+                <Card
+                  href={`/scholarships/${s._id}`}
+                  title={s.title}
+                  subtitle={`${s.institution ?? ""} • ${s.hostCountry ?? ""}`}
+                  date={s.createdAt}
+                  image={typeof s.image === "string" ? s.image : s.image?.url}
+                >
+                  <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                    {s.description}
+                  </p>
+                </Card>
+              </article>
             ))}
-          </div>
+          </section>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-10 flex-wrap">
+            <nav
+              aria-label="Pagination"
+              className="flex justify-center items-center gap-2 mt-10 flex-wrap"
+            >
               {/* Previous */}
               {page > 1 && (
                 <Link
@@ -134,7 +176,7 @@ export default async function Home({
                   Next
                 </Link>
               )}
-            </div>
+            </nav>
           )}
         </>
       ) : (

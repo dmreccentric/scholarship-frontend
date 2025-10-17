@@ -1,9 +1,8 @@
 import "./globals.css";
-import NavBar from "./components/NavBar";
-import Footer from "./components/Footer";
-import { Toaster } from "react-hot-toast";
-import Script from "next/script";
 import type { Metadata } from "next";
+import Script from "next/script";
+import { Toaster } from "react-hot-toast";
+import ClientLayout from "./components/ClientLayout";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://yoursite.com"),
@@ -65,6 +64,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
           strategy="afterInteractive"
@@ -80,22 +80,15 @@ export default function RootLayout({
       </head>
 
       <body className="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-        <NavBar />
-        <main id="content" role="main" className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
+        {/* Client-side layout wrapper */}
+        <ClientLayout>{children}</ClientLayout>
 
         {/* Global Toast Notifications */}
         <Toaster
           position="top-right"
           toastOptions={{
-            success: {
-              style: { background: "#059669", color: "#fff" },
-            },
-            error: {
-              style: { background: "#dc2626", color: "#fff" },
-            },
+            success: { style: { background: "#059669", color: "#fff" } },
+            error: { style: { background: "#dc2626", color: "#fff" } },
           }}
         />
       </body>
